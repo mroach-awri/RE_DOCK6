@@ -42,56 +42,9 @@ use threads;
 use threads::shared;
 use Thread::Semaphore;
 
-my $re_dock6_version = "RE_Dock6 version 1.0\n";
-
-my $usage = "
-re_dock6.pl  -r  <rec.mol2>  -b  <box.pdb>  -l  <ligands.mol2>  [options]
-
-REQUIRED PARAMETERS:
--rec / -r               Ready-to-dock receptor structure in mol2 format.
--box / -b               Box file in pdb format.
--lig / -l               Molecule(s) to dock in either mol2 or gzipped mol2 (.mol2.gz) format.
-
-OPTIONAL PARAMETERS:
--proc / -p  <INT>       Number of processors/threads to use. Default = 1.
--dir / -d               ABSOLUTE PATH to the directory for output, default is the current 
-                        working directory.
--outfile / -o           Specify a file name for the scored conforations, default = scored.mol2.
--tmpdir / -t            ABSOLUTE PATH to the directory in which to create the temp folder  
-                        (default = make the temp folder in current directory).
--force / -f             Force overwrite of output file (if it exists). Default = re_dock6 will
-                        resume docking and skip already docked ligands.
--version / -v           Print version and exit.
--help / -h              Print this message and exit.
-
-PRESET EFFORT SETTINGS:
--e_sparse / -e_s        Sparse generation of ligand poses. Use this for large, open binding
-                        sites.
--e_quick / -e_q         Quick docking. A bit less dense and less energy minimisation than default.
--e_thorough / -e_t      Very dense generation of ligand poses, if the default setting is not
-                        quite enough (e.g. very tight binding pocket). Use with caution.
-
-ADVANCED USAGE: DOCK-RELATED PARAMETERS:
--n_emin / -n_e  <INT>   Number of steps of energy minimization. default = 50, sensible range 
-                        = 25-200.
--n_confs / -n_c  <INT>  Number of conformers for Dock to output for EACH ligand (default = 1).
-
-ADVANCED USAGE: CONFORMER GENERATION PARAMETERS:
--c_rots / -c_r  <INT>   Number of x,y,z rotations per step to perform (more = more conformations,
-                        default = 3). Total rotations per step = n_rot^3.
--c_step / -c_s  <FLOAT> 
-                        Step distance across grid box (less = more conformations, default = 1.0,
-                        sensible range = 0.5-2.5).
--c_tether / -c_t <FLOAT>
-                        Tether conformation generation to within a specified radius of the box
-                        center. Default = 3.0, sensible range = 2.0-5.0 for normal docking, or
-                        some arbitrary large number to carpetbomb everything in the box.
-";
+my $re_dock6_version = "RE_Dock6 version 1.0.0\n";
 
 #---PARAMETERS---
-my $curdir = getcwd;
-my $outfile = "scored";
-my $tmp_dir;
 
 # Required parameters
 my $recmol2;
@@ -99,6 +52,7 @@ my $box;
 my $lib;
 
 # optional parameters
+my $outfile = "scored";
 my $outdir;
 my $tmpdir;
 my $force;
@@ -120,8 +74,54 @@ my $cur_lig;
 my $lig_number = 0;
 my $die=0;
 my %skip_ligands;
+my $curdir = getcwd;
+my $tmp_dir;
 
 my $command = "$0 @ARGV";
+
+my $usage = "
+re_dock6.pl  -r  <rec.mol2>  -b  <box.pdb>  -l  <ligands.mol2>  [options]
+
+REQUIRED PARAMETERS:
+-rec / -r               Ready-to-dock receptor structure in mol2 format.
+-box / -b               Box file in pdb format.
+-lig / -l               Molecule(s) to dock in either mol2 or gzipped mol2 (.mol2.gz) format.
+
+OPTIONAL PARAMETERS:
+-proc / -p  <INT>       Number of processors/threads to use. Default = $threads.
+-dir / -d               ABSOLUTE PATH to the directory for output, default is the current 
+                        working directory.
+-outfile / -o           Specify a file name for the scored conforations, default = $outfile.mol2.
+-tmpdir / -t            ABSOLUTE PATH to the directory in which to create the temp folder  
+                        (default = make the temp folder in current directory).
+-force / -f             Force overwrite of output file (if it exists). Default = re_dock6 will
+                        resume docking and skip already docked ligands.
+-version / -v           Print version and exit.
+-help / -h              Print this message and exit.
+
+PRESET EFFORT SETTINGS:
+-e_sparse / -e_s        Sparse generation of ligand poses. Use this for large, open binding
+                        sites.
+-e_quick / -e_q         Quick docking. A bit less dense and less energy minimisation than default.
+-e_thorough / -e_t      Very dense generation of ligand poses, if the default setting is not
+                        quite enough (e.g. very tight binding pocket). Use with caution.
+
+ADVANCED USAGE: DOCK-RELATED PARAMETERS:
+-n_emin / -n_e  <INT>   Number of steps of energy minimization. default = $e_min, sensible range 
+                        = 25-200.
+-n_confs / -n_c  <INT>  Number of conformers for Dock to output for EACH ligand (default = $confs).
+
+ADVANCED USAGE: CONFORMER GENERATION PARAMETERS:
+-c_rots / -c_r  <INT>   Number of x,y,z rotations per step to perform (more = more conformations,
+                        default = $n_rot). Total rotations per step = n_rot^3.
+-c_step / -c_s  <FLOAT> 
+                        Step distance across grid box (less = more conformations, default = $d_step,
+                        sensible range = 0.5-2.5).
+-c_tether / -c_t <FLOAT>
+                        Tether conformation generation to within a specified radius of the box
+                        center. Default = $tether, sensible range = 2.0-5.0 for normal docking, or
+                        some arbitrary large number to carpetbomb everything in the box.
+";
 
 GetOptions (
             "rec=s" => \$recmol2,
