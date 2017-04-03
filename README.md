@@ -21,7 +21,7 @@ If RE_DOCK6 has helped in your work then you can cite it like so, but please don
 
 **RE_DOCK6:**
 
-[![DOI](https://zenodo.org/badge/87030606.svg)](https://zenodo.org/badge/latestdoi/87030606)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.439792.svg)](https://doi.org/10.5281/zenodo.439792)
 
 **UCSF Dock6:**
 
