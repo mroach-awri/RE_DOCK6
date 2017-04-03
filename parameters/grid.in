@@ -1,0 +1,16 @@
+compute_grids                  yes
+grid_spacing                   0.3
+output_molecule                no
+contact_score                  no
+energy_score                   yes
+energy_cutoff_distance         10
+atom_model                     u
+attractive_exponent            6
+repulsive_exponent             12
+distance_dielectric            yes
+dielectric_factor              4
+bump_filter                    no
+receptor_file                  ##RECEPTORMOL2##
+box_file                       ##BOXPDB##
+vdw_definition_file            ##VDWDEFN##
+score_grid_prefix              ##GRID##
